@@ -1,0 +1,211 @@
+[
+  {
+    "hanzi": "介",
+    "pinyin": "jiè",
+    "polish": "przedstawić",
+    "tags": [
+      "czasowniki"
+    ],
+    "id": "d75615a6-82b8-4a2c-af5d-28a7fd198a45",
+    "createdAt": 1786961370715
+  },
+  {
+    "hanzi": "只",
+    "pinyin": "zhǐ",
+    "polish": "tylko",
+    "tags": [
+      "podstawowe"
+    ],
+    "id": "069f9d3b-02f4-4137-93a2-47c0db9e18c9",
+    "createdAt": 1786960985446
+  },
+  {
+    "hanzi": "八",
+    "pinyin": "bā",
+    "polish": "8",
+    "tags": [
+      "liczby"
+    ],
+    "id": "ba06293f-6cb2-45d7-80cc-3520a674796e",
+    "createdAt": 1786960787552
+  },
+  {
+    "hanzi": "叫",
+    "pinyin": "jiào",
+    "polish": "dzwonić / nazywać (nazywam się)",
+    "tags": [
+      "czasowniki",
+      "kilka_znaków",
+      "podstawowe"
+    ],
+    "id": "c3db9449-2909-49a4-a80f-4f1ddb6b5df2",
+    "createdAt": 1786957318103
+  },
+  {
+    "hanzi": "中午",
+    "pinyin": "zhōngwǔ",
+    "polish": "środek dnia, około południa",
+    "tags": [
+      "kilka_znaków",
+      "czas"
+    ],
+    "id": "53acb460-850b-4f09-9b2d-867793121588",
+    "createdAt": 1786956812812
+  },
+  {
+    "hanzi": "中",
+    "pinyin": "zhōng",
+    "polish": "środek/centrum",
+    "tags": [
+      "podstawowe"
+    ],
+    "id": "1f3eff83-2128-41c4-ac9d-0e9261f70410",
+    "createdAt": 1786956106410
+  },
+  {
+    "hanzi": "入口",
+    "pinyin": "rùkǒu",
+    "polish": "wejście",
+    "tags": [
+      "otoczenie",
+      "kilka_znaków"
+    ],
+    "id": "b69ea4bb-3991-4452-a936-a967e867ef97",
+    "createdAt": 1786697437298
+  },
+  {
+    "hanzi": "人口",
+    "pinyin": "rénkǒu",
+    "polish": "populacja",
+    "tags": [
+      "ludzie",
+      "kilka_znaków"
+    ],
+    "id": "4605d456-e6f0-4a5b-93ac-681d1fcadb2d",
+    "createdAt": 1786697388930
+  },
+  {
+    "hanzi": "口",
+    "pinyin": "kǒu",
+    "polish": "buzia",
+    "tags": [
+      "ludzie"
+    ],
+    "id": "a8ade579-dca1-4e43-99a0-23698f77f10c",
+    "createdAt": 1786697284383
+  },
+  {
+    "hanzi": "半年",
+    "pinyin": "bànnián",
+    "polish": "pół roku",
+    "tags": [
+      "czas",
+      "kilka_znaków"
+    ],
+    "id": "0ad5ed6a-4d48-4dd4-8103-a1ea3fdf2d76",
+    "createdAt": 1786697097527
+  },
+  {
+    "hanzi": "年",
+    "pinyin": "nián",
+    "polish": "rok",
+    "tags": [
+      "czas"
+    ],
+    "id": "90268763-2598-4fb6-b9d3-eb17089441a0",
+    "createdAt": 1786697057139
+  },
+  {
+    "hanzi": "午",
+    "pinyin": "wǔ",
+    "polish": "południe",
+    "tags": [
+      "czas"
+    ],
+    "id": "4e82a216-27d6-43e7-a4f7-c74e3fe70640",
+    "createdAt": 1786696914999
+  },
+  {
+    "hanzi": "什",
+    "pinyin": "shén (shénme)",
+    "polish": "co",
+    "tags": [
+      "podstawowe",
+      "zaimki",
+      "kilka_znaków"
+    ],
+    "id": "8b628b23-5ffc-4541-af36-4f733596cc5e",
+    "createdAt": 1786696792979
+  },
+  {
+    "hanzi": "十",
+    "pinyin": "shí",
+    "polish": "10",
+    "tags": [
+      "liczby"
+    ],
+    "id": "f5e49e23-0ac2-4922-a854-f36f087de2c9",
+    "createdAt": 1786696702161
+  },
+  {
+    "hanzi": "干",
+    "pinyin": "gān",
+    "polish": "suchy",
+    "tags": [
+      "przymiotniki"
+    ],
+    "id": "08af1ee6-9dc3-47cb-9bf1-47a791fc945d",
+    "createdAt": 1786696683039
+  },
+  {
+    "hanzi": "半",
+    "pinyin": "bàn",
+    "polish": "połowa",
+    "tags": [
+      "podstawowe"
+    ],
+    "id": "55df88fe-ba5c-4f62-9954-2b87dcd1ae38",
+    "createdAt": 1786696655911
+  },
+  {
+    "hanzi": "个",
+    "pinyin": "gè",
+    "polish": "jednostka (individual)",
+    "tags": [
+      "ludzie"
+    ],
+    "id": "892e39c9-9db4-4ee6-b2ad-51f4caafe0b2",
+    "createdAt": 1786696629261
+  },
+  {
+    "hanzi": "从",
+    "pinyin": "cóng",
+    "polish": "z",
+    "tags": [
+      "podstawowe",
+      "przedrostki"
+    ],
+    "id": "e34ba655-60ba-411a-9527-f11b5908ed12",
+    "createdAt": 1786696594197
+  },
+  {
+    "hanzi": "入",
+    "pinyin": "rù",
+    "polish": "wejść",
+    "tags": [
+      "czasowniki"
+    ],
+    "id": "39496150-d1ce-4435-8d89-835321adc26a",
+    "createdAt": 1786696509298
+  },
+  {
+    "hanzi": "人",
+    "pinyin": "rén",
+    "polish": "osoba",
+    "tags": [
+      "ludzie"
+    ],
+    "id": "7e7d8716-5ab1-43bb-9bf4-64029a039a92",
+    "createdAt": 1786696425732
+  }
+]

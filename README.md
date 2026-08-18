@@ -1,7 +1,10 @@
 # 汉字 · Fiszki
 
-A minimal, local-first flashcard app for learning Chinese, built for my own study routine.
+A minimal flashcard app for learning Chinese, built for my own study routine.
 No spaced repetition and no card burying — every card stays available for every review.
+
+Runs on Cloudflare: a Worker serves the React SPA and a small JSON API backed by a D1 database,
+so the same word list is available on every device, including mobile.
 
 ## Features
 
@@ -12,29 +15,50 @@ No spaced repetition and no card burying — every card stays available for ever
 - The `done` tag excludes a word from reviews; the "Umiem" button adds it during a session
 - Chinese characters are rendered large during review
 - Add, edit, search and delete words
-- JSON backup: export the whole list to a file and import it back
+- JSON backup: export the whole list to a file, or upload a file back into the database
 
-## Data
+## Architecture
 
-Everything is stored in the browser's `localStorage` under `chinese-flashcards.words.v1`.
-Nothing leaves the machine, but the data is tied to that browser profile — clearing browsing
-data or switching browsers loses it, so use **Zapisz kopię** now and then and keep the JSON file safe.
-Importing a backup merges it into the current list instead of replacing it.
+| Part | Location |
+|------|----------|
+| React SPA | `src/` |
+| Worker API (`/api/words`) | `worker/index.ts` |
+| D1 schema | `migrations/` |
+| Cloudflare config | `wrangler.jsonc` |
 
-## Running locally
+The API is protected by a single shared password held in the `APP_PASSWORD` Worker secret.
+The browser sends it as a bearer token and keeps it in `localStorage`, so the unlock screen
+only appears once per device.
+
+## Local development
 
 ```bash
 npm install
+npx wrangler d1 migrations apply chinese-flashcards --local   # once
 npm run dev
 ```
 
-The app is served at http://localhost:5180/.
+The app is served at http://localhost:5180/ with a local D1 database.
+The local password comes from `.dev.vars` (git-ignored).
+
+## Deploying
 
 ```bash
-npm run build    # type-check and build into dist/
-npm run preview  # preview the production build
+npx wrangler login
+npx wrangler d1 create chinese-flashcards        # copy the id into wrangler.jsonc
+npm run db:migrate                               # apply migrations to the remote database
+npx wrangler secret put APP_PASSWORD             # set the shared password
+npm run deploy
 ```
+
+Later deploys are just `npm run deploy`.
+
+## Backups
+
+Time Travel gives D1 point-in-time recovery for the last few days, but the **Zapisz kopię**
+button is still the simplest safety net — it downloads the whole list as JSON.
+**Wczytaj kopię** uploads a file back into the database, matching existing words by id.
 
 ## Stack
 
-Vite · React 19 · TypeScript · Tailwind CSS v4
+Vite · React 19 · TypeScript · Tailwind CSS v4 · Cloudflare Workers · D1

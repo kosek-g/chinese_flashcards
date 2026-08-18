@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { clsx } from 'clsx'
+import { setPassword } from './api'
+import { Button } from './components/Button'
+import { Card } from './components/Card'
+import { UnlockScreen } from './components/UnlockScreen'
 import { useWords } from './hooks/useWords'
 import { WordsPage } from './pages/WordsPage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -12,8 +16,39 @@ const TABS: { id: Tab; label: string }[] = [
 ]
 
 export default function App() {
-  const { words, allTags, addWord, updateWord, deleteWord, markDone, importWords } = useWords()
+  const { words, allTags, status, error, refresh, addWord, updateWord, deleteWord, markDone, importWords } =
+    useWords()
   const [tab, setTab] = useState<Tab>('review')
+
+  if (status === 'locked') {
+    return (
+      <UnlockScreen
+        onUnlock={(password) => {
+          setPassword(password)
+          void refresh()
+        }}
+      />
+    )
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-[var(--color-text-secondary)]">
+        Ładowanie…
+      </div>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6">
+        <Card className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
+          <p className="text-sm text-[var(--color-danger)]">{error}</p>
+          <Button onClick={() => void refresh()}>Spróbuj ponownie</Button>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[var(--color-surface-0)]">
@@ -44,6 +79,10 @@ export default function App() {
           </nav>
         </div>
       </header>
+
+      {error && (
+        <p className="mx-auto max-w-5xl px-6 pt-4 text-sm text-[var(--color-danger)]">{error}</p>
+      )}
 
       <main className="mx-auto max-w-5xl px-6 py-8">
         {tab === 'review' ? (

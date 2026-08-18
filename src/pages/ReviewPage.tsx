@@ -16,7 +16,7 @@ function shuffle<T>(items: T[]): T[] {
 interface Props {
   words: Word[]
   allTags: string[]
-  onMarkDone: (id: string) => void
+  onMarkDone: (word: Word) => void
 }
 
 export function ReviewPage({ words, allTags, onMarkDone }: Props) {
@@ -211,7 +211,7 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
         <Button
           variant="ghost"
           onClick={() => {
-            onMarkDone(current.id)
+            onMarkDone(current)
             next()
           }}
           title={`Dodaje tag „${DONE_TAG}” i wyklucza słowo z powtórek`}

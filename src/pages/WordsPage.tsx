@@ -15,7 +15,7 @@ interface Props {
   onAdd: (draft: WordDraft) => void
   onUpdate: (id: string, draft: WordDraft) => void
   onDelete: (id: string) => void
-  onImport: (words: Word[]) => void
+  onImport: (words: Word[]) => Promise<void>
 }
 
 export function WordsPage({ words, allTags, onAdd, onUpdate, onDelete, onImport }: Props) {
@@ -72,8 +72,8 @@ export function WordsPage({ words, allTags, onAdd, onUpdate, onDelete, onImport 
     if (!file) return
     try {
       const imported = await readBackup(file)
-      onImport(imported)
-      window.alert(`Wczytano ${imported.length} słów.`)
+      await onImport(imported)
+      window.alert(`Wysłano ${imported.length} słów do bazy.`)
     } catch {
       window.alert('Nie udało się wczytać pliku kopii.')
     }

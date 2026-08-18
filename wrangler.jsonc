@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "chinese-flashcards",
-      "database_id": "REPLACE_WITH_DATABASE_ID",
+      "database_id": "3c073ae5-f10d-4b82-a581-be630a77d4b0",
       "migrations_dir": "migrations"
     }
   ]

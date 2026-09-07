@@ -26,14 +26,13 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
 
-  const reviewTags = useMemo(() => allTags.filter((tag) => tag !== DONE_TAG), [allTags])
-
+  // A word must carry every selected tag, and `done` words stay hidden unless that tag is picked.
   const eligible = useMemo(
     () =>
       words.filter(
         (w) =>
-          !w.tags.includes(DONE_TAG) &&
-          (selectedTags.length === 0 || selectedTags.some((tag) => w.tags.includes(tag))),
+          (selectedTags.includes(DONE_TAG) || !w.tags.includes(DONE_TAG)) &&
+          selectedTags.every((tag) => w.tags.includes(tag)),
       ),
     [words, selectedTags],
   )
@@ -98,14 +97,14 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
               Tagi
             </h2>
-            {reviewTags.length === 0 ? (
+            {allTags.length === 0 ? (
               <p className="text-sm text-[var(--color-text-muted)]">Brak tagów.</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 <Chip active={selectedTags.length === 0} onClick={() => setSelectedTags([])}>
                   wszystkie
                 </Chip>
-                {reviewTags.map((tag) => (
+                {allTags.map((tag) => (
                   <Chip
                     key={tag}
                     active={selectedTags.includes(tag)}
@@ -121,7 +120,8 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
               </div>
             )}
             <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-              Wybranie kilku tagów pokazuje słowa z dowolnym z nich. Słowa z tagiem „{DONE_TAG}” są pomijane.
+              Wybranie kilku tagów pokazuje tylko słowa, które mają wszystkie z nich. Słowa z tagiem
+              „{DONE_TAG}” pojawiają się dopiero po wybraniu tego tagu.
             </p>
           </div>
 

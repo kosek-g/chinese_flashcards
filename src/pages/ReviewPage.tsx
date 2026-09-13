@@ -49,15 +49,31 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
   const current = activeDeck && index < activeDeck.length ? wordsById.get(activeDeck[index]) : undefined
   const finished = activeDeck !== null && index >= activeDeck.length
 
+  // Android Chrome only speaks when the call originates from a user gesture, so playback is
+  // triggered from the handlers below rather than from an effect.
+  const speakCard = (word: Word | undefined, isRevealed: boolean) => {
+    if (mode !== 'speech' || !word) return
+    if (direction === 'zh-pl' || isRevealed) speakChinese(word.hanzi)
+  }
+
   const start = () => {
-    setDeck(shuffle(eligible.map((w) => w.id)))
+    const ids = shuffle(eligible.map((w) => w.id))
+    setDeck(ids)
     setIndex(0)
     setRevealed(false)
+    speakCard(wordsById.get(ids[0]), false)
   }
 
   const next = () => {
+    const upcomingId = activeDeck?.[index + 1]
     setRevealed(false)
     setIndex((i) => i + 1)
+    speakCard(upcomingId ? wordsById.get(upcomingId) : undefined, false)
+  }
+
+  const reveal = () => {
+    setRevealed(true)
+    speakCard(current, true)
   }
 
   useEffect(() => {
@@ -66,19 +82,14 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
       if (e.code !== 'Space' && e.code !== 'Enter') return
       e.preventDefault()
       if (revealed) next()
-      else setRevealed(true)
+      else reveal()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [deck, revealed])
+  }, [deck, revealed, index])
 
-  // The Chinese side is spoken as soon as it becomes the side being asked about or revealed.
   const audioText =
     mode === 'speech' && current && (direction === 'zh-pl' || revealed) ? current.hanzi : null
-
-  useEffect(() => {
-    if (audioText) speakChinese(audioText)
-  }, [audioText, index])
 
   useEffect(() => {
     if (!speechSupported || voiceReady) return
@@ -269,7 +280,7 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
             Następne
           </Button>
         ) : (
-          <Button onClick={() => setRevealed(true)} className="flex-1">
+          <Button onClick={reveal} className="flex-1">
             Pokaż odpowiedź
           </Button>
         )}

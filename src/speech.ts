@@ -16,14 +16,19 @@ export function speakChinese(text: string): void {
   if (!isSpeechSupported()) return
 
   const synth = window.speechSynthesis
-  synth.cancel()
-
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'zh-CN'
   utterance.rate = 0.8
   const voice = chineseVoice()
   if (voice) utterance.voice = voice
-  synth.speak(utterance)
+
+  if (synth.speaking || synth.pending) {
+    // Chrome drops an utterance queued in the same tick as cancel().
+    synth.cancel()
+    setTimeout(() => synth.speak(utterance), 120)
+  } else {
+    synth.speak(utterance)
+  }
 }
 
 // Chrome populates the voice list asynchronously, so ask for it before the first card.

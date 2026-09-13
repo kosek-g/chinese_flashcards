@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Chip } from '../components/Chip'
-import { DONE_TAG, type Direction, type Word } from '../types'
+import { hasChineseVoice, isSpeechSupported, speakChinese } from '../speech'
+import { DONE_TAG, type Direction, type ReviewMode, type Word } from '../types'
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items]
@@ -19,8 +20,12 @@ interface Props {
   onMarkDone: (word: Word) => void
 }
 
+const speechSupported = isSpeechSupported()
+
 export function ReviewPage({ words, allTags, onMarkDone }: Props) {
   const [direction, setDirection] = useState<Direction>('zh-pl')
+  const [mode, setMode] = useState<ReviewMode>('text')
+  const [voiceReady, setVoiceReady] = useState(hasChineseVoice)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [deck, setDeck] = useState<string[] | null>(null)
   const [index, setIndex] = useState(0)
@@ -67,10 +72,58 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [deck, revealed])
 
+  // The Chinese side is spoken as soon as it becomes the side being asked about or revealed.
+  const audioText =
+    mode === 'speech' && current && (direction === 'zh-pl' || revealed) ? current.hanzi : null
+
+  useEffect(() => {
+    if (audioText) speakChinese(audioText)
+  }, [audioText, index])
+
+  useEffect(() => {
+    if (!speechSupported || voiceReady) return
+    const update = () => setVoiceReady(hasChineseVoice())
+    window.speechSynthesis.addEventListener('voiceschanged', update)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', update)
+  }, [voiceReady])
+
   if (deck === null) {
     return (
       <div className="mx-auto max-w-xl">
         <Card className="flex flex-col gap-6">
+          <div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+              Tryb
+            </h2>
+            <div className="flex gap-2">
+              <Button
+                variant={mode === 'text' ? 'primary' : 'ghost'}
+                onClick={() => setMode('text')}
+                className="flex-1"
+              >
+                Tekst
+              </Button>
+              <Button
+                variant={mode === 'speech' ? 'primary' : 'ghost'}
+                onClick={() => setMode('speech')}
+                disabled={!speechSupported}
+                className="flex-1"
+              >
+                Mowa
+              </Button>
+            </div>
+            {mode === 'speech' && (
+              <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                W trybie mowy chińska strona fiszki jest odtwarzana na głos zamiast pokazywana.
+              </p>
+            )}
+            {mode === 'speech' && !voiceReady && (
+              <p className="mt-2 text-xs text-[var(--color-warning)]">
+                Nie znaleziono chińskiego głosu w tym systemie — wymowa może być nieprawidłowa.
+              </p>
+            )}
+          </div>
+
           <div>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
               Kierunek
@@ -173,12 +226,18 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
       <Card className="flex min-h-80 flex-col items-center justify-center gap-6 py-12 text-center">
         {showChineseFirst ? (
           <>
-            <div>
-              <p className="font-cjk text-8xl leading-tight">{current.hanzi}</p>
-              {current.pinyin && (
-                <p className="mt-3 text-3xl text-[var(--color-text-secondary)]">{current.pinyin}</p>
-              )}
-            </div>
+            {mode === 'speech' && !revealed ? (
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Posłuchaj i powiedz znaczenie po polsku
+              </p>
+            ) : (
+              <div>
+                <p className="font-cjk text-8xl leading-tight">{current.hanzi}</p>
+                {current.pinyin && (
+                  <p className="mt-3 text-3xl text-[var(--color-text-secondary)]">{current.pinyin}</p>
+                )}
+              </div>
+            )}
             {revealed && (
               <p className="border-t border-[var(--color-border)] pt-6 text-4xl">{current.polish}</p>
             )}
@@ -195,6 +254,12 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
               </div>
             )}
           </>
+        )}
+
+        {audioText && (
+          <Button size="sm" variant="ghost" onClick={() => speakChinese(audioText)}>
+            ▶ Odtwórz ponownie
+          </Button>
         )}
       </Card>
 

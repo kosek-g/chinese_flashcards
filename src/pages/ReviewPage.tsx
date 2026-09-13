@@ -51,9 +51,10 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
 
   // Android Chrome only speaks when the call originates from a user gesture, so playback is
   // triggered from the handlers below rather than from an effect.
-  const speakCard = (word: Word | undefined, isRevealed: boolean) => {
+  const speakCard = (word: Word | undefined, phase: 'card' | 'reveal') => {
     if (mode !== 'speech' || !word) return
-    if (direction === 'zh-pl' || isRevealed) speakChinese(word.hanzi)
+    const isChineseSide = phase === 'card' ? direction === 'zh-pl' : direction === 'pl-zh'
+    if (isChineseSide) speakChinese(word.hanzi)
   }
 
   const start = () => {
@@ -61,19 +62,19 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
     setDeck(ids)
     setIndex(0)
     setRevealed(false)
-    speakCard(wordsById.get(ids[0]), false)
+    speakCard(wordsById.get(ids[0]), 'card')
   }
 
   const next = () => {
     const upcomingId = activeDeck?.[index + 1]
     setRevealed(false)
     setIndex((i) => i + 1)
-    speakCard(upcomingId ? wordsById.get(upcomingId) : undefined, false)
+    speakCard(upcomingId ? wordsById.get(upcomingId) : undefined, 'card')
   }
 
   const reveal = () => {
     setRevealed(true)
-    speakCard(current, true)
+    speakCard(current, 'reveal')
   }
 
   useEffect(() => {
@@ -123,11 +124,6 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
                 Mowa
               </Button>
             </div>
-            {mode === 'speech' && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                W trybie mowy chińska strona fiszki jest odtwarzana na głos zamiast pokazywana.
-              </p>
-            )}
             {mode === 'speech' && !voiceReady && (
               <p className="mt-2 text-xs text-[var(--color-warning)]">
                 Nie znaleziono chińskiego głosu w tym systemie — wymowa może być nieprawidłowa.

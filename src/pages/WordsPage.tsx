@@ -5,9 +5,12 @@ import { Chip } from '../components/Chip'
 import { Input } from '../components/Input'
 import { TagInput } from '../components/TagInput'
 import { downloadBackup, readBackup } from '../backup'
+import { isSpeechSupported, speakChinese } from '../speech'
 import { DONE_TAG, type Word, type WordDraft } from '../types'
 
 const EMPTY_DRAFT: WordDraft = { hanzi: '', pinyin: '', polish: '', tags: [] }
+
+const speechSupported = isSpeechSupported()
 
 interface Props {
   words: Word[]
@@ -214,6 +217,16 @@ export function WordsPage({ words, allTags, onAdd, onUpdate, onDelete, onImport 
                   )}
                 </div>
                 <div className="flex gap-1">
+                  {speechSupported && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => speakChinese(word.hanzi)}
+                      aria-label={`Odtwórz ${word.hanzi}`}
+                    >
+                      ▶
+                    </Button>
+                  )}
                   <Button size="sm" variant="ghost" onClick={() => startEdit(word)}>
                     Edytuj
                   </Button>

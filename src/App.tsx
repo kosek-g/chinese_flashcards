@@ -1,24 +1,33 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { clsx } from 'clsx'
-import { setPassword } from './api'
+import { api, setPassword } from './api'
 import { Button } from './components/Button'
 import { Card } from './components/Card'
 import { UnlockScreen } from './components/UnlockScreen'
 import { useWords } from './hooks/useWords'
+import { todayKey } from './stats'
 import { WordsPage } from './pages/WordsPage'
 import { ReviewPage } from './pages/ReviewPage'
+import { StatsPage } from './pages/StatsPage'
 
-type Tab = 'words' | 'review'
+type Tab = 'words' | 'review' | 'stats'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'review', label: 'Powtórka' },
   { id: 'words', label: 'Słowa' },
+  { id: 'stats', label: 'Statystyki' },
 ]
 
 export default function App() {
   const { words, allTags, status, error, refresh, addWord, updateWord, deleteWord, markDone, importWords } =
     useWords()
   const [tab, setTab] = useState<Tab>('review')
+
+  const recordReview = useCallback(() => {
+    void api.recordReview(todayKey()).catch(() => {
+      // Statistics are best-effort and must never interrupt a review.
+    })
+  }, [])
 
   if (status === 'locked') {
     return (
@@ -86,7 +95,14 @@ export default function App() {
 
       <main className="mx-auto max-w-5xl px-6 py-8">
         {tab === 'review' ? (
-          <ReviewPage words={words} allTags={allTags} onMarkDone={markDone} />
+          <ReviewPage
+            words={words}
+            allTags={allTags}
+            onMarkDone={markDone}
+            onCardReviewed={recordReview}
+          />
+        ) : tab === 'stats' ? (
+          <StatsPage />
         ) : (
           <WordsPage
             words={words}

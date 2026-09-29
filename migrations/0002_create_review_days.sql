@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS review_days (
+  day TEXT PRIMARY KEY,
+  reviewed INTEGER NOT NULL DEFAULT 0
+);

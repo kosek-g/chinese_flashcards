@@ -15,6 +15,13 @@ interface WordRow {
   created_at: number
 }
 
+interface ReviewDayRow {
+  day: string
+  reviewed: number
+}
+
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
 const MAX_FIELD_LENGTH = 200
 const MAX_TAGS = 50
 const MAX_IMPORT_SIZE = 5000
@@ -150,6 +157,27 @@ async function importWords(request: Request, env: Env): Promise<Response> {
   return listWords(env)
 }
 
+async function listReviewDays(env: Env): Promise<Response> {
+  const { results } = await env.DB.prepare(
+    'SELECT day, reviewed FROM review_days ORDER BY day',
+  ).all<ReviewDayRow>()
+  return json(results)
+}
+
+/** Each reviewed card bumps its day, so an interrupted session still counts. */
+async function recordReview(request: Request, env: Env): Promise<Response> {
+  const payload = await readJson(request)
+  const day = (payload as { day?: unknown } | undefined)?.day
+  if (typeof day !== 'string' || !DAY_PATTERN.test(day)) return json({ error: 'Invalid day' }, 400)
+
+  await env.DB.prepare(
+    'INSERT INTO review_days (day, reviewed) VALUES (?, 1) ON CONFLICT(day) DO UPDATE SET reviewed = reviewed + 1',
+  )
+    .bind(day)
+    .run()
+  return json({ ok: true })
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url)
@@ -157,9 +185,16 @@ export default {
     if (!isAuthorized(request, env)) return json({ error: 'Unauthorized' }, 401)
 
     const [resource, id] = url.pathname.split('/').filter(Boolean).slice(1)
-    if (resource !== 'words') return json({ error: 'Not found' }, 404)
 
     try {
+      if (resource === 'reviews') {
+        if (request.method === 'GET') return await listReviewDays(env)
+        if (request.method === 'POST') return await recordReview(request, env)
+        return json({ error: 'Method not allowed' }, 405)
+      }
+
+      if (resource !== 'words') return json({ error: 'Not found' }, 404)
+
       if (id === undefined) {
         if (request.method === 'GET') return await listWords(env)
         if (request.method === 'POST') return await createWord(request, env)

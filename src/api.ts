@@ -1,3 +1,4 @@
+import type { DayCount } from './stats'
 import type { Word, WordDraft } from './types'
 
 const PASSWORD_KEY = 'chinese-flashcards.password'
@@ -33,4 +34,7 @@ export const api = {
     request<Word>(`/words/${id}`, { method: 'PUT', body: JSON.stringify(draft) }),
   remove: (id: string) => request<{ ok: true }>(`/words/${id}`, { method: 'DELETE' }),
   import: (words: Word[]) => request<Word[]>('/words/import', { method: 'POST', body: JSON.stringify(words) }),
+  reviewDays: () => request<DayCount[]>('/reviews'),
+  recordReview: (day: string) =>
+    request<{ ok: true }>('/reviews', { method: 'POST', body: JSON.stringify({ day }) }),
 }

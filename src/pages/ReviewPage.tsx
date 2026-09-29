@@ -18,11 +18,12 @@ interface Props {
   words: Word[]
   allTags: string[]
   onMarkDone: (word: Word) => void
+  onCardReviewed: () => void
 }
 
 const speechSupported = isSpeechSupported()
 
-export function ReviewPage({ words, allTags, onMarkDone }: Props) {
+export function ReviewPage({ words, allTags, onMarkDone, onCardReviewed }: Props) {
   const [direction, setDirection] = useState<Direction>('zh-pl')
   const [mode, setMode] = useState<ReviewMode>('text')
   const [voiceReady, setVoiceReady] = useState(hasChineseVoice)
@@ -67,6 +68,7 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
 
   const next = () => {
     const upcomingId = activeDeck?.[index + 1]
+    onCardReviewed()
     setRevealed(false)
     setIndex((i) => i + 1)
     speakCard(upcomingId ? wordsById.get(upcomingId) : undefined, 'card')
@@ -225,7 +227,13 @@ export function ReviewPage({ words, allTags, onMarkDone }: Props) {
         <span>
           {index + 1} / {activeDeck?.length}
         </span>
-        <Button size="sm" variant="ghost" onClick={() => setDeck(null)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            if (window.confirm(`Zakończyć powtórkę? Powtórzone słowa: ${index}.`)) setDeck(null)
+          }}
+        >
           Zakończ
         </Button>
       </div>

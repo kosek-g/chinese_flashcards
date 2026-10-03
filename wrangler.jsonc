@@ -7,7 +7,7 @@
   "vars": {
     "AZURE_SPEECH_REGION": "westeurope",
     "AZURE_SPEECH_VOICE": "zh-CN-YunjianNeural",
-    "AZURE_SPEECH_RATE": "-20%"
+    "AZURE_SPEECH_RATE": "-30%"
   },
   "assets": {
     "binding": "ASSETS",

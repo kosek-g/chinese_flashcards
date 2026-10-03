@@ -221,6 +221,8 @@ async function synthesize(request: Request, env: Env, ctx: ExecutionContext): Pr
         'Ocp-Apim-Subscription-Key': env.AZURE_SPEECH_KEY,
         'Content-Type': 'application/ssml+xml',
         'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+        // Azure answers 400 to any request without a User-Agent, and Workers sends none.
+        'User-Agent': 'chinese-flashcards',
       },
       body: ssml,
     },

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Chip } from '../components/Chip'
-import { hasChineseVoice, isSpeechSupported, speakChinese } from '../speech'
+import { speakChinese } from '../speech'
 import { DONE_TAG, type Direction, type ReviewMode, type Word } from '../types'
 
 function shuffle<T>(items: T[]): T[] {
@@ -21,12 +21,10 @@ interface Props {
   onCardReviewed: () => void
 }
 
-const speechSupported = isSpeechSupported()
 
 export function ReviewPage({ words, allTags, onMarkDone, onCardReviewed }: Props) {
   const [direction, setDirection] = useState<Direction>('zh-pl')
   const [mode, setMode] = useState<ReviewMode>('text')
-  const [voiceReady, setVoiceReady] = useState(hasChineseVoice)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [deck, setDeck] = useState<string[] | null>(null)
   const [index, setIndex] = useState(0)
@@ -94,13 +92,6 @@ export function ReviewPage({ words, allTags, onMarkDone, onCardReviewed }: Props
   const audioText =
     mode === 'speech' && current && (direction === 'zh-pl' || revealed) ? current.hanzi : null
 
-  useEffect(() => {
-    if (!speechSupported || voiceReady) return
-    const update = () => setVoiceReady(hasChineseVoice())
-    window.speechSynthesis.addEventListener('voiceschanged', update)
-    return () => window.speechSynthesis.removeEventListener('voiceschanged', update)
-  }, [voiceReady])
-
   if (deck === null) {
     return (
       <div className="mx-auto max-w-xl">
@@ -120,17 +111,11 @@ export function ReviewPage({ words, allTags, onMarkDone, onCardReviewed }: Props
               <Button
                 variant={mode === 'speech' ? 'primary' : 'ghost'}
                 onClick={() => setMode('speech')}
-                disabled={!speechSupported}
                 className="flex-1"
               >
                 Mowa
               </Button>
             </div>
-            {mode === 'speech' && !voiceReady && (
-              <p className="mt-2 text-xs text-[var(--color-warning)]">
-                Nie znaleziono chińskiego głosu w tym systemie — wymowa może być nieprawidłowa.
-              </p>
-            )}
           </div>
 
           <div>

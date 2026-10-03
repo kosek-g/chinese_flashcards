@@ -4,6 +4,9 @@ interface Env {
   DB: D1Database
   ASSETS: Fetcher
   APP_PASSWORD: string
+  AZURE_SPEECH_KEY?: string
+  AZURE_SPEECH_REGION?: string
+  AZURE_SPEECH_VOICE?: string
 }
 
 interface WordRow {
@@ -21,6 +24,9 @@ interface ReviewDayRow {
 }
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+const DEFAULT_VOICE = 'zh-CN-XiaoxiaoNeural'
+const AUDIO_HEADERS = { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000' }
 
 const MAX_FIELD_LENGTH = 200
 const MAX_TAGS = 50
@@ -164,6 +170,66 @@ async function listReviewDays(env: Env): Promise<Response> {
   return json(results)
 }
 
+function escapeXml(value: string): string {
+  return value.replace(/[<>&'"]/g, (char) => {
+    if (char === '<') return '&lt;'
+    if (char === '>') return '&gt;'
+    if (char === '&') return '&amp;'
+    if (char === "'") return '&apos;'
+    return '&quot;'
+  })
+}
+
+async function audioCacheKey(voice: string, text: string): Promise<Request> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${voice}|${text}`))
+  const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  return new Request(`https://speech.cache/${hash}.mp3`)
+}
+
+/** Proxies Azure neural TTS so the key stays server-side, and caches every clip at the edge. */
+async function synthesize(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  if (!env.AZURE_SPEECH_KEY || !env.AZURE_SPEECH_REGION) {
+    return json({ error: 'Speech is not configured' }, 503)
+  }
+
+  const payload = await readJson(request)
+  const text = (payload as { text?: unknown } | undefined)?.text
+  if (typeof text !== 'string' || !text.trim() || text.length > MAX_FIELD_LENGTH) {
+    return json({ error: 'Invalid text' }, 400)
+  }
+
+  const voice = env.AZURE_SPEECH_VOICE ?? DEFAULT_VOICE
+  const cacheKey = await audioCacheKey(voice, text)
+  const cached = await caches.default.match(cacheKey)
+  if (cached) return cached
+
+  const ssml =
+    `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="zh-CN">` +
+    `<voice name="${voice}"><prosody rate="-10%">${escapeXml(text)}</prosody></voice></speak>`
+
+  const upstream = await fetch(
+    `https://${env.AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
+    {
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': env.AZURE_SPEECH_KEY,
+        'Content-Type': 'application/ssml+xml',
+        'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+      },
+      body: ssml,
+    },
+  )
+
+  if (!upstream.ok) {
+    console.error('Azure speech failed', upstream.status)
+    return json({ error: 'Speech service unavailable' }, 502)
+  }
+
+  const audio = new Response(upstream.body, { headers: AUDIO_HEADERS })
+  ctx.waitUntil(caches.default.put(cacheKey, audio.clone()))
+  return audio
+}
+
 /** Each reviewed card bumps its day, so an interrupted session still counts. */
 async function recordReview(request: Request, env: Env): Promise<Response> {
   const payload = await readJson(request)
@@ -179,7 +245,7 @@ async function recordReview(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url)
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
     if (!isAuthorized(request, env)) return json({ error: 'Unauthorized' }, 401)
@@ -190,6 +256,11 @@ export default {
       if (resource === 'reviews') {
         if (request.method === 'GET') return await listReviewDays(env)
         if (request.method === 'POST') return await recordReview(request, env)
+        return json({ error: 'Method not allowed' }, 405)
+      }
+
+      if (resource === 'speech') {
+        if (request.method === 'POST') return await synthesize(request, env, ctx)
         return json({ error: 'Method not allowed' }, 405)
       }
 

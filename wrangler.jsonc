@@ -4,6 +4,10 @@
   "main": "./worker/index.ts",
   "compatibility_date": "2026-08-18",
   "observability": { "enabled": true },
+  "vars": {
+    "AZURE_SPEECH_REGION": "westeurope",
+    "AZURE_SPEECH_VOICE": "zh-CN-XiaoxiaoNeural"
+  },
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",

@@ -37,4 +37,13 @@ export const api = {
   reviewDays: () => request<DayCount[]>('/reviews'),
   recordReview: (day: string) =>
     request<{ ok: true }>('/reviews', { method: 'POST', body: JSON.stringify({ day }) }),
+  speech: async (text: string): Promise<Blob> => {
+    const response = await fetch('/api/speech', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getPassword()}` },
+      body: JSON.stringify({ text }),
+    })
+    if (!response.ok) throw new Error(`Błąd syntezy mowy (${response.status}).`)
+    return await response.blob()
+  },
 }

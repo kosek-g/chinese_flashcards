@@ -6,7 +6,8 @@
   "observability": { "enabled": true },
   "vars": {
     "AZURE_SPEECH_REGION": "westeurope",
-    "AZURE_SPEECH_VOICE": "zh-CN-XiaoxiaoNeural"
+    "AZURE_SPEECH_VOICE": "zh-CN-YunjianNeural",
+    "AZURE_SPEECH_RATE": "-20%"
   },
   "assets": {
     "binding": "ASSETS",

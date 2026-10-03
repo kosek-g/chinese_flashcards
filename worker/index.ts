@@ -7,6 +7,7 @@ interface Env {
   AZURE_SPEECH_KEY?: string
   AZURE_SPEECH_REGION?: string
   AZURE_SPEECH_VOICE?: string
+  AZURE_SPEECH_RATE?: string
 }
 
 interface WordRow {
@@ -26,6 +27,7 @@ interface ReviewDayRow {
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 const DEFAULT_VOICE = 'zh-CN-XiaoxiaoNeural'
+const DEFAULT_RATE = '-10%'
 const AUDIO_HEADERS = { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000' }
 
 const MAX_FIELD_LENGTH = 200
@@ -180,8 +182,11 @@ function escapeXml(value: string): string {
   })
 }
 
-async function audioCacheKey(voice: string, text: string): Promise<Request> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${voice}|${text}`))
+async function audioCacheKey(voice: string, rate: string, text: string): Promise<Request> {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(`${voice}|${rate}|${text}`),
+  )
   const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
   return new Request(`https://speech.cache/${hash}.mp3`)
 }
@@ -199,13 +204,14 @@ async function synthesize(request: Request, env: Env, ctx: ExecutionContext): Pr
   }
 
   const voice = env.AZURE_SPEECH_VOICE ?? DEFAULT_VOICE
-  const cacheKey = await audioCacheKey(voice, text)
+  const rate = env.AZURE_SPEECH_RATE ?? DEFAULT_RATE
+  const cacheKey = await audioCacheKey(voice, rate, text)
   const cached = await caches.default.match(cacheKey)
   if (cached) return cached
 
   const ssml =
     `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="zh-CN">` +
-    `<voice name="${voice}"><prosody rate="-10%">${escapeXml(text)}</prosody></voice></speak>`
+    `<voice name="${voice}"><prosody rate="${rate}">${escapeXml(text)}</prosody></voice></speak>`
 
   const upstream = await fetch(
     `https://${env.AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
